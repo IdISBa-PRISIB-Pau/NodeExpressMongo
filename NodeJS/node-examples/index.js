@@ -1,7 +1,7 @@
 var rect = require('./rectangle');
 
 function solveRect(l, b) {
-	console.log("Resolvent el rectangle l = " + l + " i b = " + b);
+	console.log("Resolent el rectangle l = " + l + " i b = " + b);
 	rect(l, b, (err, rectangle) => {
 		if(err){
 			console.log("Error: ", err.message);
