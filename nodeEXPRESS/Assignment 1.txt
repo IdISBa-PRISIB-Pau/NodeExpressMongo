@@ -1,0 +1,19 @@
+Assignment 1
+
+Task 1: Update dishRouter.js to implement the REST
+API support for:
+– http://localhost:3000/dishes/:dishId
+
+Task 2: Implement promoRouter.js that implements the
+router for:
+– http://localhost:3000/promotions
+– http://localhost:3000/promotions/:promoId
+
+Task 3: Implement leaderRouter.js that implements the
+router for:
+– http://localhost:3000/leaders
+– http://localhost:3000/leaders/:leaderId
+
+He creat una col·lecció de tests a Postman amb les 24 cidades. 
+
+Totes tornen l'esperat.

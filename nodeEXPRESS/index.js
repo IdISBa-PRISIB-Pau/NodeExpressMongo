@@ -9,8 +9,12 @@ const 	express = require('express'),
 app.use(morgan('dev'));
 
 const dishRouter = require('./routes/dishRouter');
+const promoRouter = require('./routes/promoRouter');
+const leaderRouter = require('./routes/leaderRouter');
 
 app.use('/dishes', dishRouter);
+app.use('/promotions', promoRouter);
+app.use('/leaders', leaderRouter);
 
 const server = http.createServer(app);
 
