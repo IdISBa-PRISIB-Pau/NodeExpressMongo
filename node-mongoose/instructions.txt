@@ -1,0 +1,112 @@
+Exercise (Instructions): Mongoose ODM Part 1
+Objectives and Outcomes
+
+In this exercise you will explore the Mongoose ODM and learn about creating schemas and interacting with the MongoDB database using Mongoose methods. At the end of this exercise, you will be able to:
+
+    Install Mongoose ODM and connect to a MongoDB Server
+    Create Mongoose Schemas
+    Perform Database operations with Mongoose methods
+
+Installing Mongoose
+
+    Create a folder named node-mongoose and move into the folder.
+
+    At the prompt, type the following to initialize a package.json file in the node-mongoose folder:
+
+  npm init
+  
+    Accept the standard defaults suggested until you end up with a package.json file containing the following:
+
+{
+  "name": "node-mongoose",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index"
+  },
+  "author": "Jogesh Muppala",
+  "license": "ISC"
+}
+
+    In this folder, install Mongoose by typing the following at the prompt:
+
+     npm install mongoose@5.1.7 --save
+     
+     
+Implementing a Node Application
+
+    Create a sub-folder named models in the node-mongoose folder. Move to this folder.
+    Create a file named dishes.js and add the following code to create a Mongoose schema:
+
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const dishSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    description: {
+        type: String,
+        required: true
+    }
+},{
+    timestamps: true
+});
+
+var Dishes = mongoose.model('Dish', dishSchema);
+
+module.exports = Dishes;
+
+    Move to the node-mongoose folder and create a file named index.js and add the following code:
+
+const mongoose = require('mongoose');
+
+const Dishes = require('./models/dishes');
+
+const url = 'mongodb://localhost:27017/conFusion';
+const connect = mongoose.connect(url);
+
+connect.then((db) => {
+
+    console.log('Connected correctly to server');
+
+    var newDish = Dishes({
+        name: 'Uthappizza',
+        description: 'test'
+    });
+
+    newDish.save()
+        .then((dish) => {
+            console.log(dish);
+
+            return Dishes.find({});
+        })
+        .then((dishes) => {
+            console.log(dishes);
+
+            return Dishes.remove({});
+        })
+        .then(() => {
+            return mongoose.connection.close();
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+
+});
+
+    Make sure that your MongoDB server is up and running. Then at the terminal prompt type the following to start the server and see the result:
+
+  npm start
+  
+  
+    Create a .gitignore file with the contents "node_modules"
+    Initialize the Git repository and do a Git commit with the message "Mongoose Part 1".
+
+Conclusions
+
+In this exercise you learnt about the Mongoose module and used it to create schemas and interact with the MongoDB server.

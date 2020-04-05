@@ -1,0 +1,134 @@
+Exercise (Instructions): Mongoose ODM Part 2
+Objectives and Outcomes
+
+In this exercise you will continue to explore the Mongoose ODM and learn 
+about creating schemas and interacting with the MongoDB database using Mongoose 
+methods. At the end of this exercise, you will be able to:
+
+    Perform Database operations with Mongoose methods
+
+Mongoose Operations
+
+    Now, update index.js as follows:
+
+. . .
+    
+    Dishes.create({
+        name: 'Uthapizza',
+        description: 'Test'
+    })
+    .then((dish) => {
+        console.log(dish);
+        
+        return Dishes.find({}).exec();
+    })
+    .then((dishes) => {
+        console.log(dishes);
+
+        return Dishes.remove({});
+    })
+    .then(() => {
+        return mongoose.connection.close();
+    })
+    .catch((err) => {
+        console.log(err);
+    });
+    
+. . .
+
+    Run this server on the console and see the result.
+    Do a Git commit with the message "Mongoose Part 2".
+
+Adding Sub-documents to a Document
+
+    Update dishes.js in the models folder as follows:
+
+. . .
+
+var commentSchema = new Schema({
+    rating:  {
+        type: Number,
+        min: 1,
+        max: 5,
+        required: true
+    },
+    comment:  {
+        type: String,
+        required: true
+    },
+    author:  {
+        type: String,
+        required: true
+    }
+}, {
+    timestamps: true
+});
+
+var dishSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    comments:[commentSchema]
+}, {
+    timestamps: true
+});
+
+. . .
+
+    Update index.js as follows:
+    
+    . . .
+
+    Dishes.create({
+        name: 'Uthappizza',
+        description: 'test'
+    })
+    .then((dish) => {
+        console.log(dish);
+
+        return Dishes.findByIdAndUpdate(dish._id, {
+            $set: { description: 'Updated test'}
+        },{ 
+            new: true 
+        })
+        .exec();
+    })
+    .then((dish) => {
+        console.log(dish);
+
+        dish.comments.push({
+            rating: 5,
+            comment: 'I\'m getting a sinking feeling!',
+            author: 'Leonardo di Carpaccio'
+        });
+
+        return dish.save();
+    })
+    .then((dish) => {
+        console.log(dish);
+
+        return Dishes.remove({});
+    })
+    .then(() => {
+        return mongoose.connection.close();
+    })
+    .catch((err) => {
+        console.log(err);
+    });
+    
+. . .
+
+
+    Run the server and observe the result.
+    Do a Git commit with the message "Mongoose Part 3".
+
+Conclusions
+
+In this exercise you learnt further about the Mongoose module and used it to create embedded schemas for sub-documents.
+
