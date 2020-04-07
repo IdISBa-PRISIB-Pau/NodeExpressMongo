@@ -1,0 +1,69 @@
+Exercise (Instructions): Using Cookies
+Objectives and Outcomes
+
+In this exercise you will examine the use of cookies for authentication. 
+The server will send a signed cookie to the client upon successful authentication, 
+and expects the client to include the cookie with every subsequent request. 
+At the end of this exercise, you will be able to:
+
+    Set up your Express application to send signed cookies.
+    Set up your Express application to parse the cookies in the header 
+    of the incoming request messages
+
+Using cookie-parser
+
+    The cookie-parser Express middleware is already included in the Express 
+    REST API application. If you need to add Cookie parser middleware then 
+    you can install the NPM module as follows:
+    
+      npm install cookie-parser@1.4.3 --save
+      
+ Update app.js as follows:
+ 
+ app.use(cookieParser('12345-67890-09876-54321'));
+
+function auth (req, res, next) {
+
+  if (!req.signedCookies.user) {
+    var authHeader = req.headers.authorization;
+    if (!authHeader) {
+        var err = new Error('You are not authenticated!');
+        res.setHeader('WWW-Authenticate', 'Basic');              
+        err.status = 401;
+        next(err);
+        return;
+    }
+    var auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+    var user = auth[0];
+    var pass = auth[1];
+    if (user == 'admin' && pass == 'password') {
+        res.cookie('user','admin',{signed: true});
+        next(); // authorized
+    } else {
+        var err = new Error('You are not authenticated!');
+        res.setHeader('WWW-Authenticate', 'Basic');              
+        err.status = 401;
+        next(err);
+    }
+  }
+  else {
+      if (req.signedCookies.user === 'admin') {
+          next();
+      }
+      else {
+          var err = new Error('You are not authenticated!');
+          err.status = 401;
+          next(err);
+      }
+  }
+}
+
+. . .
+
+
+    Save the changes, run the server and test the behavior.
+    Do a Git commit with the message "Cookies".
+
+Conclusions
+
+In this exercise you examined the use of cookies for tracking authenticated users so that subsequent access to the server can be enabled without need for authentication.
