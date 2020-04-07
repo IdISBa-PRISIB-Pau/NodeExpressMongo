@@ -1,0 +1,48 @@
+Exercise (Instructions): Basic Authentication
+Objectives and Outcomes
+
+In this exercise you will use basic authentication approach to authenticate users. At the end of this exercise, you will be able to:
+
+    Set up an Express server to handle basic authentication
+    Use the basic access authentication approach to do basic authentication.
+
+Setting up Basic Authentication
+
+    You will continue with the Express REST API server that you have been working on in the previous module in the conFusionServer folder.
+    Open the app.js file and update its contents as follows:
+    
+    . . .
+
+function auth (req, res, next) {
+  console.log(req.headers);
+  var authHeader = req.headers.authorization;
+  if (!authHeader) {
+      var err = new Error('You are not authenticated!');
+      res.setHeader('WWW-Authenticate', 'Basic');
+      err.status = 401;
+      next(err);
+      return;
+  }
+
+  var auth = new Buffer.from(authHeader.split(' ')[1], 'base64').toString().split(':');
+  var user = auth[0];
+  var pass = auth[1];
+  if (user == 'admin' && pass == 'password') {
+      next(); // authorized
+  } else {
+      var err = new Error('You are not authenticated!');
+      res.setHeader('WWW-Authenticate', 'Basic');      
+      err.status = 401;
+      next(err);
+  }
+}
+
+app.use(auth);
+
+
+    Save the changes and start the server. Access the server from a browser by opening an incognito window and see the result.
+    Do a Git commit with the message "Basic Authentication".
+
+Conclusions
+
+In this exercise you learnt about performing basic authentication with username and password in a browser.
