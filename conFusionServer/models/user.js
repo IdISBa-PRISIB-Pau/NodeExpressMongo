@@ -11,7 +11,7 @@ var user = new Schema({
 		type: String,
 		required: true
 	},
-	amdmin: {
+	admin: {
 		type: Boolean,
 		default: false
 	}

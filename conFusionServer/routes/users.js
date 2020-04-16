@@ -16,7 +16,7 @@ router.post('/signup', (req,res,next) => {
 				if(user != null){
 					var err = new Error('user ' + req.body.username + ' already exists');
 					err.status = 403;
-					next(err);
+					return next(err);
 				}else{
 					return User.create({
 						username: req.body.username,
@@ -27,6 +27,7 @@ router.post('/signup', (req,res,next) => {
 			})
 			.then((user) => {
 				res.statusCode = 200;
+				req.session.user = 'authenticated';
 				res.setHeader('Content-Type', 'Application/json');
 				res.json({status:'Registration successful', user: user});
 			}, (err) => next(err))
@@ -35,6 +36,8 @@ router.post('/signup', (req,res,next) => {
 
 router.post('/login', (req, res, next) => {
 	if (!req.session.user) {
+		console.log(req.headers);
+		console.log(req.headers.authorization);
 		var authHeader = req.headers.authorization;
 		console.log('authheader ' + authHeader);
 		if (!authHeader) {

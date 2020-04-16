@@ -11,11 +11,8 @@ var usersRouter = require('./routes/users');
 var dishRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promoRouter');
 var leaderRouter = require('./routes/leaderRouter');
-
 const mongoose = require('mongoose');
-
 const Dishes = require('./models/dishes');
-
 const url = 'mongodb://localhost:27017/conFusion';
 const connect = mongoose.connect(url);
 
@@ -44,8 +41,10 @@ app.use(session({
 	store: new FileStore()
 }));
 
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+
 function auth (req, res, next) {
 	console.log(req.session);
 	console.log(req.session.user);
