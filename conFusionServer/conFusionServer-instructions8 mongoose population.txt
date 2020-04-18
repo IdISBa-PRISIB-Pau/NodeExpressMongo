@@ -1,15 +1,63 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-var authenticate = require('../authenticate');
+Exercise (Instructions): Mongoose Population
+Objectives and Outcomes
 
-const Dishes = require('../models/dishes');
+In this exercise you will learn about how you can reference one document from another in MongoDB. In addition you will use Mongoose population to populate information in a document from a referenced document. At the end of this exercise, you will be able to:
 
-const dishRouter = express.Router();
+    Use Mongoose population to cross-reference users within a comment
+    Populate the comments with the users’ information upon querying
 
-dishRouter.use(bodyParser.json());
+Using Mongoose Population
 
-dishRouter.route('/')
+    Open user.js and update the code for the schema as follows:
+
+
+var User = new Schema({
+    firstname: {
+      type: String,
+        default: ''
+    },
+    lastname: {
+      type: String,
+        default: ''
+    },
+    admin:   {
+        type: Boolean,
+        default: false
+    }
+});
+
+. . .
+
+Open dishes.js and update the comment schema as follows:
+
+
+. . .
+
+var commentSchema = new Schema({
+    rating:  {
+        type: Number,
+        min: 1,
+        max: 5,
+        required: true
+    },
+    comment:  {
+        type: String,
+        required: true
+    },
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
+}, {
+    timestamps: true
+});
+
+. . .
+
+    Open dishRouter.js and update the routers and the methods as shown below:
+
+. . .
+
 dishRouter.route('/')
 .get((req,res,next) => {
     Dishes.find({})
@@ -21,29 +69,8 @@ dishRouter.route('/')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post(authenticate.verifyUser, (req, res, next) => {
-    Dishes.create(req.body)
-    .then((dish) => {
-        console.log('Dish Created ', dish);
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(dish);
-    }, (err) => next(err))
-    .catch((err) => next(err));
-})
-.put(authenticate.verifyUser, (req, res, next) => {
-    res.statusCode = 403;
-    res.end('PUT operation not supported on /dishes');
-})
-.delete(authenticate.verifyUser, (req, res, next) => {
-    Dishes.remove({})
-    .then((resp) => {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(resp);
-    }, (err) => next(err))
-    .catch((err) => next(err));    
-});
+
+. . .
 
 dishRouter.route('/:dishId')
 .get((req,res,next) => {
@@ -56,33 +83,10 @@ dishRouter.route('/:dishId')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post(authenticate.verifyUser, (req, res, next) => {
-    res.statusCode = 403;
-    res.end('POST operation not supported on /dishes/'+ req.params.dishId);
-})
-.put(authenticate.verifyUser, (req, res, next) => {
-    Dishes.findByIdAndUpdate(req.params.dishId, {
-        $set: req.body
-    }, { new: true })
-    .then((dish) => {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(dish);
-    }, (err) => next(err))
-    .catch((err) => next(err));
-})
-.delete(authenticate.verifyUser, (req, res, next) => {
-    Dishes.findByIdAndRemove(req.params.dishId)
-    .then((resp) => {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(resp);
-    }, (err) => next(err))
-    .catch((err) => next(err));
-});
+
+. . .
 
 dishRouter.route('/:dishId/comments')
-
 .get((req,res,next) => {
     Dishes.findById(req.params.dishId)
     .populate('comments.author')
@@ -125,33 +129,8 @@ dishRouter.route('/:dishId/comments')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.put(authenticate.verifyUser, (req, res, next) => {
-    res.statusCode = 403;
-    res.end('PUT operation not supported on /dishes/'
-        + req.params.dishId + '/comments');
-})
-.delete(authenticate.verifyUser, (req, res, next) => {
-    Dishes.findById(req.params.dishId)
-    .then((dish) => {
-        if (dish != null) {
-            for (var i = (dish.comments.length -1); i >= 0; i--) {
-                dish.comments.id(dish.comments[i]._id).remove();
-            }
-            dish.save()
-            .then((dish) => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(dish);                
-            }, (err) => next(err));
-        }
-        else {
-            err = new Error('Dish ' + req.params.dishId + ' not found');
-            err.status = 404;
-            return next(err);
-        }
-    }, (err) => next(err))
-    .catch((err) => next(err));    
-});
+
+. . .
 
 dishRouter.route('/:dishId/comments/:commentId')
 .get((req,res,next) => {
@@ -176,12 +155,10 @@ dishRouter.route('/:dishId/comments/:commentId')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.post((req, res, next) => {
-    res.statusCode = 403;
-    res.end('POST operation not supported on /dishes/'+ req.params.dishId
-        + '/comments/' + req.params.commentId);
-})
-.put(authenticate.verifyUser, (req, res, next) => {
+
+. . .
+
+.put(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if (dish != null && dish.comments.id(req.params.commentId) != null) {
@@ -215,7 +192,7 @@ dishRouter.route('/:dishId/comments/:commentId')
     }, (err) => next(err))
     .catch((err) => next(err));
 })
-.delete(authenticate.verifyUser, (req, res, next) => {
+.delete(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Dishes.findById(req.params.dishId)
     .then((dish) => {
         if (dish != null && dish.comments.id(req.params.commentId) != null) {
@@ -246,6 +223,17 @@ dishRouter.route('/:dishId/comments/:commentId')
     .catch((err) => next(err));
 });
 
+. . .
 
+Open users.js and update the register function as follows:
 
-module.exports = dishRouter;
+. . .
+
+c
+
+. . .
+
+    Save all the changes and start the server and test.
+    If you happen to have a registered user in your MongoDB, then use the Mongo REPL to delete the user.
+    Do a Git commit with the message "Mongoose Population".
+
