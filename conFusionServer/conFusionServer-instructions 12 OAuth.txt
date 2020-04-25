@@ -1,0 +1,111 @@
+Exercise (Instructions): Using OAuth with Passport and Facebook
+Objectives and Outcomes
+
+In this exercise you will make use of Passport OAuth support through the passport-facebook-token module together with Facebook's OAuth support to enable user authentication within your server. At the end of this exercise, you will be able to:
+
+    Configure your server to support user authentication based on OAuth providers
+    Use Passport OAuth support through the passport-facebook-token module to support OAuth based authentication with Facebook for your users.
+
+Exercise Resources
+
+Registering your app on Facebook
+
+    Go to https://developers.facebook.com/apps/ and register your app by following the instructions there and obtain your App ID and App Secret.
+    Download the index.html file provided above and move it into the public folder to replace the index.html file if you already have one there.
+    In the index.html file, replace the "YOUR CLIENT ID" with the Client App ID that you obtain above. 
+
+Installing passport-facebook-token Module
+
+    In the conFusionServer folder, install passport-facebook-token module by typing the following at the prompt:
+    
+       npm install passport-facebook-token@3.3.0 --save
+       
+Updating config.js
+
+    Update config.js with the App ID and App Secret that you obtained earlier as follows:
+
+
+module.exports = {
+    'secretKey': '12345-67890-09876-54321',
+    'mongoUrl': 'mongodb://localhost:27017/conFusion',
+    'facebook': {
+        clientId: 'Your Client App ID',
+        clientSecret: 'Your Client App Secret'
+    }
+}
+
+Updating User Model
+
+    Open user.js from the models folder and update the User schema as follows:
+    
+    var User = new Schema({
+  . . .
+
+    facebookId: String,
+
+  . . .
+});
+
+Setting up Facebook Authentication
+
+    Open authenticate.js and add in the following line to add Facebook strategy:
+
+
+. . .
+
+var FacebookTokenStrategy = require('passport-facebook-token');
+
+. . .
+
+exports.facebookPassport = passport.use(new FacebookTokenStrategy({
+        clientID: config.facebook.clientId,
+        clientSecret: config.facebook.clientSecret
+    }, (accessToken, refreshToken, profile, done) => {
+        User.findOne({facebookId: profile.id}, (err, user) => {
+            if (err) {
+                return done(err, false);
+            }
+            if (!err && user !== null) {
+                return done(null, user);
+            }
+            else {
+                user = new User({ username: profile.displayName });
+                user.facebookId = profile.id;
+                user.firstname = profile.name.givenName;
+                user.lastname = profile.name.familyName;
+                user.save((err, user) => {
+                    if (err)
+                        return done(err, false);
+                    else
+                        return done(null, user);
+                })
+            }
+        });
+    }
+));
+
+Updating users.js
+
+    Open users.js and add the following code to it:
+    
+    . . .
+
+router.get('/facebook/token', passport.authenticate('facebook-token'), (req, res) => {
+  if (req.user) {
+    var token = authenticate.getToken({_id: req.user._id});
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json({success: true, token: token, status: 'You are successfully logged in!'});
+  }
+});
+
+. . .
+
+    Start your server and test your application.
+    In a browser, open https://localhost:3443/index.html to open the index.html file. Then click on the Facebook Login button to log into Facebook. At the end of the login process, open your browser's JavaScript console and then obtain the Access Token from there.
+    Then you can use the access token to contact the server at https://localhost:3443/users/facebook/token and pass in the token using the Authorization header with the value as Bearer <Access Token> to obtain the JWT token from the server.
+    Save all the changes and do a Git commit with the message "Passport Facebook".
+
+Conclusions
+
+In this exercise you learnt about using the Facebook OAuth support to enable authentication of your users and allowing them access to your server.
